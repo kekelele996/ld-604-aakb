@@ -1,21 +1,20 @@
-import { mockData } from "../mocks/seedData";
-import type { FaultReport } from "../types/FaultReport";
+import type { Snapshot } from "../types/Snapshot";
+import type { CurrentUser } from "../types/Audit";
+import type { FaultFormInput } from "./engine";
+import { dispatchAction, fetchSnapshot } from "./snapshot";
 
-const endpoint = "/api/fault-report";
+export type { FaultFormInput };
 
-export async function listFaultReport(): Promise<FaultReport[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && true) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
-  }
-  return [...(mockData.faultReport as unknown as FaultReport[])];
-}
+export const listFaultReports = async (): Promise<Snapshot> => fetchSnapshot();
 
-export async function saveFaultReport(payload: FaultReport) {
-  console.info("save FaultReport", payload);
-  return payload;
-}
+/** 登记报修 */
+export const createFaultReport = (form: FaultFormInput, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("createFault", [form], actor);
+
+/** 同线路重复报修合并 */
+export const mergeFaultReport = (id: number, masterId: number, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("mergeFault", [id, masterId], actor);
+
+/** 合并/单张报修生成工单 */
+export const generateTicketFromFault = (masterFaultId: number, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("generateTicket", [masterFaultId], actor);

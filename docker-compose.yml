@@ -1,8 +1,10 @@
 name: grid-repair
+
 services:
   db:
     image: mysql:8.0
     container_name: ${COMPOSE_PROJECT_NAME:-grid-repair}-db
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_NAME:-app_db}
       MYSQL_USER: ${DB_USER:-app_user}
@@ -14,15 +16,18 @@ services:
       - db_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${DB_USER:-app_user} -p${DB_PASSWORD:-app_password} --silent"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 12
+      start_period: 30s
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME:-grid-repair}-backend
+    restart: unless-stopped
     env_file:
       - .env
     environment:
@@ -32,28 +37,33 @@ services:
       DB_NAME: ${DB_NAME:-app_db}
       DB_USER: ${DB_USER:-app_user}
       DB_PASSWORD: ${DB_PASSWORD:-app_password}
-      JWT_SECRET: local-dev-secret
+      DATABASE_URL: mysql://${DB_USER:-app_user}:${DB_PASSWORD:-app_password}@db:3306/${DB_NAME:-app_db}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret}
+      CORS_ORIGIN: "*"
     ports:
       - "${BACKEND_PORT:-21104}:3000"
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 15s
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME:-grid-repair}-frontend
-    env_file:
-      - .env
+    restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-20104}:80"
     depends_on:
       backend:
         condition: service_healthy
+
 volumes:
   db_data:
+    name: ${COMPOSE_PROJECT_NAME:-grid-repair}_db_data

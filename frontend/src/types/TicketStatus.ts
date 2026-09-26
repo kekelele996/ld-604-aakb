@@ -1,3 +1,4 @@
-export const TicketStatus = ["WAIT_DISPATCH","ASSIGNED","ARRIVED","REPAIRING","RESTORED","CLOSED"] as const;
-export type TicketStatus = (typeof TicketStatus)[number];
-export const TicketStatusText: Record<TicketStatus, string> = Object.fromEntries(TicketStatus.map((value) => [value, value.replace(/_/g, " ")])) as Record<TicketStatus, string>;
+import type { TicketStatus } from "../constants/TicketStatus";
+
+/** 类型层对枚举的重复声明入口（新增枚举值须同步 constants + types） */
+export type { TicketStatus };

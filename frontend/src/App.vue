@@ -1,26 +1,101 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { onMounted, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { routes } from "./router/routes";
-import { mockData } from "./mocks/seedData";
-import StatusBadge from "./components/common/StatusBadge.vue";
-import StatCard from "./components/common/StatCard.vue";
-const active = ref<string>(routes[0]?.route ?? "/dashboard");
-const current = computed(() => routes.find((route) => route.route === active.value) ?? routes[0]);
-const entries = Object.entries(mockData);
+import { RoleOptions, RoleText, type Role } from "./constants/Role";
+import { useAuthStore } from "./stores/authStore";
+import { useDataStore } from "./stores/dataStore";
+
+const router = useRouter();
+const route = useRoute();
+const auth = useAuthStore();
+const data = useDataStore();
+
+onMounted(() => {
+  data.load();
+});
+
+const navRoutes = computed(() => routes.filter((r) => r.meta));
+const currentTitle = computed(() => (route.meta.name as string) ?? "抢修态势");
+
+const onChangeRole = (role: Role) => {
+  auth.switchRole(role);
+};
+
+const resetDemo = () => {
+  data.resetDemo();
+};
 </script>
 
 <template>
-  <div class="shell">
-    <aside>
-      <div class="brand">电力配网抢修工单系统</div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <span class="bolt"><el-icon><Lightning /></el-icon></span>
+          <span>配网抢修工作台</span>
+        </div>
+        <div class="sub">GRID REPAIR · 本地数据演示</div>
+      </div>
       <nav>
-        <button v-for="route in routes" :key="route.route" :class="{ active: active === route.route }" @click="active = route.route">{{ route.name }}</button>
+        <router-link
+          v-for="r in navRoutes"
+          :key="r.path"
+          :to="r.path"
+        >
+          <el-icon><component :is="r.meta?.icon" /></el-icon>
+          <span>{{ r.meta?.name }}</span>
+        </router-link>
       </nav>
+      <div class="sidebar-foot">
+        调度员 / 班组长 / 仓管 / 审计员<br />四角色同库隔离演示
+      </div>
     </aside>
-    <main class="page">
-      <section class="page-head"><div><p class="eyebrow">grid-repair</p><h1>{{ current?.name }}</h1></div><StatusBadge value="LOCAL_DATA" /></section>
-      <section class="metrics"><StatCard label="核心模型" :value="entries.length" /><StatCard label="共享枚举" :value="3" /><StatCard label="本地记录" :value="entries.reduce((s, [, rows]) => s + rows.length, 0)" /></section>
-      <section class="workbench"><div class="panel wide"><h2>业务数据</h2><article class="row" v-for="[key, rows] in entries" :key="key"><strong>{{ key }}</strong><span>{{ rows.length }} 条</span><StatusBadge value="READY" /></article></div><div class="panel"><h2>联动检查</h2><p>页面、store、API、构造器、日志模板和枚举常量均按提示词拆分。</p></div></section>
-    </main>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="page-title">{{ currentTitle }}</div>
+        <div class="top-actions">
+          <el-tooltip content="恢复初始演示数据（本地内存）" placement="bottom">
+            <el-button size="small" plain @click="resetDemo">
+              <el-icon style="margin-right:4px"><RefreshLeft /></el-icon>重置数据
+            </el-button>
+          </el-tooltip>
+          <el-tag type="success" effect="plain" size="small">
+            <el-icon style="vertical-align:-2px"><Connection /></el-icon>
+            全流程本地跑通
+          </el-tag>
+          <span class="role-label">当前角色</span>
+          <el-select
+            :model-value="auth.role"
+            size="small"
+            style="width: 168px"
+            @change="onChangeRole"
+          >
+            <el-option
+              v-for="opt in RoleOptions"
+              :key="opt.value"
+              :label="RoleText[opt.value as Role]"
+              :value="opt.value"
+            />
+          </el-select>
+          <el-avatar :size="30" style="background:#1f6b4b">
+            {{ auth.user.name.slice(0, 1) }}
+          </el-avatar>
+        </div>
+      </header>
+      <main class="content">
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity .15s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>

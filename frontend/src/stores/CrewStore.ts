@@ -1,6 +1,20 @@
 import { defineStore } from "pinia";
-import { listCrew } from "../api/Crew";
+import { useDataStore } from "./dataStore";
+import { useAuthStore } from "./authStore";
+import { toggleCrewDuty } from "../api/Crew";
+import { runAction } from "../hooks/runAction";
+
 export const useCrewStore = defineStore("crew", {
-  state: () => ({ rows: [] as Awaited<ReturnType<typeof listCrew>>, loading: false }),
-  actions: { async load() { this.loading = true; this.rows = await listCrew(); this.loading = false; } }
+  getters: {
+    rows: () => useDataStore().crews
+  },
+  actions: {
+    load() {
+      return useDataStore().load();
+    },
+    toggleDuty(crewId: number) {
+      const auth = useAuthStore();
+      return runAction((actor) => toggleCrewDuty(crewId, actor), `班组值班状态已切换（${auth.user.name}）`);
+    }
+  }
 });

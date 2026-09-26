@@ -1,1 +1,15 @@
-export const createCrewDto = (overrides = {}) => ({ id: 1, name: "name 1", leader_id: 1, skill_tags: "skill tags 1", duty_status: "ASSIGNED", current_ticket_id: 1, contact_phone: "13800000001", ...overrides });
+import type { Crew } from "../models/Crew";
+import { CrewDutyStatus } from "../constants/Role";
+
+export const createCrewDto = (body: Partial<Crew> = {}): Crew => ({
+  id: body.id ?? 0,
+  name: body.name ?? "",
+  leader_id: body.leader_id ?? 0,
+  leader_name: body.leader_name ?? "",
+  skill_tags: body.skill_tags ?? "",
+  duty_status: body.duty_status ?? CrewDutyStatus.ON_DUTY,
+  current_ticket_id: body.current_ticket_id ?? null,
+  contact_phone: body.contact_phone ?? ""
+});
+
+export const toCrewResponse = (row: Crew): Crew => ({ ...row });

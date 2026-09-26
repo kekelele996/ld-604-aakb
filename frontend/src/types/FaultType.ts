@@ -1,3 +1,4 @@
-export const FaultType = ["OUTAGE","VOLTAGE_LOW","TRIP","EQUIPMENT_DAMAGE","SAFETY_RISK"] as const;
-export type FaultType = (typeof FaultType)[number];
-export const FaultTypeText: Record<FaultType, string> = Object.fromEntries(FaultType.map((value) => [value, value.replace(/_/g, " ")])) as Record<FaultType, string>;
+import type { FaultType } from "../constants/FaultType";
+
+/** 类型层对枚举的重复声明入口（新增枚举值须同步 constants + types） */
+export type { FaultType };

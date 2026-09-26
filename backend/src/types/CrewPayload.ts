@@ -1,1 +1,3 @@
-export type CrewPayload = Record<string, unknown>;
+export interface CrewPayload {
+  crewId: number;
+}

@@ -1,21 +1,27 @@
-import { mockData } from "../mocks/seedData";
-import type { RepairTicket } from "../types/RepairTicket";
+import type { Snapshot } from "../types/Snapshot";
+import type { CurrentUser } from "../types/Audit";
+import type { Priority } from "../constants/Priority";
+import { dispatchAction, fetchSnapshot } from "./snapshot";
 
-const endpoint = "/api/repair-ticket";
+export const listRepairTickets = async (): Promise<Snapshot> => fetchSnapshot();
 
-export async function listRepairTicket(): Promise<RepairTicket[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && true) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
-  }
-  return [...(mockData.repairTicket as unknown as RepairTicket[])];
-}
+/** 调度员派工（技能/值班校验在 engine 与后端 RBAC 后执行） */
+export const dispatchTicket = (
+  ticketId: number,
+  teamId: number,
+  priority: Priority,
+  actor: CurrentUser
+): Promise<Snapshot> => dispatchAction("dispatchTicket", [ticketId, teamId, priority], actor);
 
-export async function saveRepairTicket(payload: RepairTicket) {
-  console.info("save RepairTicket", payload);
-  return payload;
-}
+export const arriveTicket = (ticketId: number, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("arriveTicket", [ticketId], actor);
+
+export const progressTicket = (ticketId: number, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("progressTicket", [ticketId], actor);
+
+/** 复电：工单/报修/资产/班组一次联动 */
+export const restoreTicket = (ticketId: number, remark: string, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("restoreTicket", [ticketId, remark], actor);
+
+export const closeTicket = (ticketId: number, actor: CurrentUser): Promise<Snapshot> =>
+  dispatchAction("closeTicket", [ticketId], actor);

@@ -1,16 +1,30 @@
 import type { SparePartUsage } from "../types/SparePartUsage";
+import { PartStatus } from "../constants/PartStatus";
 
 export const createDefaultSparePartUsage = (overrides: Partial<SparePartUsage> = {}): SparePartUsage => ({
-  id: 1 as never,
-  ticket_id: 1 as never,
-  part_code: "part code 1" as never,
-  part_name: "part name 1" as never,
-  quantity: 92 as never,
-  warehouse_name: "warehouse name 1" as never,
-  approved_by: "approved by 1" as never,
-  usage_status: "ASSIGNED" as never,
+  id: 0,
+  ticket_id: 0,
+  part_code: "",
+  part_name: "",
+  quantity: 1,
+  warehouse_name: "中心仓库",
+  requested_by: "",
+  approved_by: null,
+  approved_at: null,
+  reject_reason: null,
+  usage_status: PartStatus.PENDING,
+  created_at: new Date().toISOString(),
   ...overrides
 });
 
-export const createSparePartUsageForm = createDefaultSparePartUsage;
-export const createSparePartUsageResponse = createDefaultSparePartUsage;
+/** 班组长备件申请表单 */
+export const createSparePartForm = (): { ticket_id: number; part_code: string; quantity: number } => ({
+  ticket_id: 0,
+  part_code: "",
+  quantity: 1
+});
+
+export type SparePartForm = ReturnType<typeof createSparePartForm>;
+
+export const createSparePartUsageResponse = (row: SparePartUsage): SparePartUsage =>
+  createDefaultSparePartUsage(row);
