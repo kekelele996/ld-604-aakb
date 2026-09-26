@@ -1,1 +1,6 @@
-export const createFaultReportDto = (overrides = {}) => ({ id: 1, reporter_name: "reporter name 1", phone: "13800000001", asset_id: 1, fault_type: "VOLTAGE_LOW", address_desc: "address desc 1", severity: "severity 1", report_channel: "report channel 1", status: "ASSIGNED", ...overrides });
+import type { FaultReport } from "../types";
+export const toFaultReportDto = (row: FaultReport): FaultReport => ({ ...row });
+export const createFaultReportPayload = () => ({
+  reporter_name: "", phone: "", asset_id: 0, fault_type: "OUTAGE", address_desc: "",
+  severity: "", report_channel: "HOTLINE", affected_users: 1
+});

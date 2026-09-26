@@ -1,1 +1,3 @@
-export interface RepairTicket { id: number; fault_report_id: number; team_id: number; dispatcher_id: number; priority: string; status: string; assigned_at: string; restored_at: string }
+import type { RepairTicket } from "../types";
+export const isActive = (ticket: RepairTicket): boolean => ["ASSIGNED", "ARRIVED", "REPAIRING"].includes(ticket.status);
+export const isRestored = (ticket: RepairTicket): boolean => ["RESTORED", "CLOSED"].includes(ticket.status);

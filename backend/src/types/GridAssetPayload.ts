@@ -1,1 +1,1 @@
-export type GridAssetPayload = Record<string, unknown>;
+export type { GridAssetPayload } from "./index";

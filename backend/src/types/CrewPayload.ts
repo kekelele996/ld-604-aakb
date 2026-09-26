@@ -1,1 +1,1 @@
-export type CrewPayload = Record<string, unknown>;
+export type { CrewPayload } from "./index";

@@ -1,21 +1,14 @@
-import { mockData } from "../mocks/seedData";
+import { localDb } from "../mocks/localDb";
 import type { GridAsset } from "../types/GridAsset";
 
-const endpoint = "/api/grid-asset";
-
-export async function listGridAsset(): Promise<GridAsset[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && true) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
-  }
-  return [...(mockData.gridAsset as unknown as GridAsset[])];
+/**
+ * 统一 /api 数据访问层。当前版本使用本地内存数据（mocks/localDb）。
+ * 后端在线时可在此切换为 fetch("/api/grid-assets")，store 与页面无需改动。
+ */
+export async function listGridAssets(): Promise<GridAsset[]> {
+  return localDb.gridAssets.map((row) => ({ ...row }));
 }
 
-export async function saveGridAsset(payload: GridAsset) {
-  console.info("save GridAsset", payload);
-  return payload;
+export async function listFeederLines(): Promise<string[]> {
+  return [...new Set(localDb.gridAssets.map((row) => row.feeder_line))];
 }

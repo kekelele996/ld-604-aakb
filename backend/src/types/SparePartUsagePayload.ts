@@ -1,1 +1,1 @@
-export type SparePartUsagePayload = Record<string, unknown>;
+export type { PartUsagePayload, ApprovePayload, StockAdjustPayload } from "./index";

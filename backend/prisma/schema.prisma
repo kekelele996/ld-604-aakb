@@ -1,0 +1,138 @@
+// Prisma schema for grid-repair (MySQL 8.0)
+// 默认 STORAGE=memory 时后端不依赖 Prisma Client；切换 STORAGE=mysql 前执行：
+//   npx prisma db pull   （按 database/init.sql 反向生成）或 npx prisma migrate deploy
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model GridAsset {
+  id           BigInt   @id @default(autoincrement())
+  assetCode    String   @unique @map("asset_code")
+  assetType    String   @map("asset_type")
+  feederLine   String   @map("feeder_line")
+  voltageLevel String   @map("voltage_level")
+  locationDesc String   @map("location_desc")
+  healthStatus String   @map("health_status")
+  ownerTeamId  BigInt?  @map("owner_team_id")
+  lastFaultAt  DateTime? @map("last_fault_at")
+  faultReports FaultReport[]
+
+  @@map("grid_asset")
+}
+
+model Crew {
+  id              BigInt  @id @default(autoincrement())
+  name            String
+  leaderId        BigInt  @map("leader_id")
+  leaderName      String  @map("leader_name")
+  skillTags       Json    @map("skill_tags")
+  dutyStatus      String  @map("duty_status")
+  currentTicketId BigInt? @map("current_ticket_id")
+  contactPhone    String  @map("contact_phone")
+
+  @@map("crew")
+}
+
+model FaultReport {
+  id           BigInt  @id @default(autoincrement())
+  reportNo     String  @unique @map("report_no")
+  reporterName String  @map("reporter_name")
+  phone        String
+  asset        GridAsset @relation(fields: [assetId], references: [id])
+  assetId      BigInt  @map("asset_id")
+  faultType    String  @map("fault_type")
+  addressDesc  String  @map("address_desc")
+  severity     String
+  reportChannel String @map("report_channel")
+  status       String
+  affectedUsers Int    @map("affected_users")
+  createdAt    DateTime @map("created_at")
+  mergedIntoId BigInt? @map("merged_into_id")
+  ticketId     BigInt? @map("ticket_id")
+
+  @@map("fault_report")
+}
+
+model RepairTicket {
+  id              BigInt  @id @default(autoincrement())
+  ticketNo        String  @unique @map("ticket_no")
+  faultReportId   BigInt  @map("fault_report_id")
+  mergedReportIds Json    @map("merged_report_ids")
+  teamId          BigInt? @map("team_id")
+  dispatcherId    BigInt  @map("dispatcher_id")
+  priority        String
+  status          String
+  assignedAt      DateTime? @map("assigned_at")
+  arrivedAt       DateTime? @map("arrived_at")
+  repairingAt     DateTime? @map("repairing_at")
+  restoredAt      DateTime? @map("restored_at")
+  closedAt        DateTime? @map("closed_at")
+  restoreNote     String? @map("restore_note")
+  createdAt       DateTime @map("created_at")
+
+  @@map("repair_ticket")
+}
+
+model SparePart {
+  id            BigInt  @id @default(autoincrement())
+  partCode      String  @unique @map("part_code")
+  partName      String  @map("part_name")
+  spec          String
+  warehouseName String  @map("warehouse_name")
+  stock         Int
+  safetyStock   Int     @map("safety_stock")
+  unit          String
+
+  @@map("spare_part")
+}
+
+model SparePartUsage {
+  id            BigInt  @id @default(autoincrement())
+  reqNo         String  @unique @map("req_no")
+  ticketId      BigInt  @map("ticket_id")
+  partId        BigInt  @map("part_id")
+  partCode      String  @map("part_code")
+  partName      String  @map("part_name")
+  quantity      Int
+  warehouseName String  @map("warehouse_name")
+  applicant     String
+  approvedBy    String? @map("approved_by")
+  approvedAt    DateTime? @map("approved_at")
+  usageStatus   String  @map("usage_status")
+  rejectReason  String? @map("reject_reason")
+  createdAt     DateTime @map("created_at")
+
+  @@map("spare_part_usage")
+}
+
+model StockLedger {
+  id        BigInt  @id @default(autoincrement())
+  partId    BigInt  @map("part_id")
+  partCode  String  @map("part_code")
+  changeQty Int     @map("change_qty")
+  balance   Int
+  reason    String
+  refReqNo  String? @map("ref_req_no")
+  operator  String
+  createdAt DateTime @map("created_at")
+
+  @@map("stock_ledger")
+}
+
+model AuditLog {
+  id         BigInt  @id @default(autoincrement())
+  actor      String
+  actorRole  String  @map("actor_role")
+  action     String
+  targetType String  @map("target_type")
+  targetId   String  @map("target_id")
+  detail     String
+  createdAt  DateTime @map("created_at")
+
+  @@map("audit_log")
+}

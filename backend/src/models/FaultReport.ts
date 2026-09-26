@@ -1,1 +1,3 @@
-export interface FaultReport { id: number; reporter_name: string; phone: string; asset_id: number; fault_type: string; address_desc: string; severity: string; report_channel: string; status: string }
+import type { FaultReport } from "../types";
+export const isPrimary = (report: FaultReport): boolean => report.merged_into_id === null;
+export const isOpen = (report: FaultReport): boolean => ["PENDING", "TICKETED"].includes(report.status);

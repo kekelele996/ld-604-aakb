@@ -1,1 +1,1 @@
-export type RepairTicketPayload = Record<string, unknown>;
+export type { DispatchPayload, RestorePayload } from "./index";

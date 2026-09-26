@@ -1,1 +1,5 @@
-export const createSparePartUsageDto = (overrides = {}) => ({ id: 1, ticket_id: 1, part_code: "part code 1", part_name: "part name 1", quantity: 92, warehouse_name: "warehouse name 1", approved_by: "approved by 1", usage_status: "ASSIGNED", ...overrides });
+import type { SparePartUsage, SparePart, StockLedger } from "../types";
+export const toSparePartUsageDto = (row: SparePartUsage): SparePartUsage => ({ ...row });
+export const toSparePartDto = (row: SparePart): SparePart => ({ ...row });
+export const toStockLedgerDto = (row: StockLedger): StockLedger => ({ ...row });
+export const createPartUsagePayload = () => ({ ticket_id: 0, part_id: 0, quantity: 1 });

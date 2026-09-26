@@ -1,16 +1,27 @@
 import type { GridAsset } from "../types/GridAsset";
 
 export const createDefaultGridAsset = (overrides: Partial<GridAsset> = {}): GridAsset => ({
-  id: 1 as never,
-  asset_code: "asset code 1" as never,
-  asset_type: "VOLTAGE_LOW" as never,
-  feeder_line: "feeder line 1" as never,
-  voltage_level: "LOW" as never,
-  location_desc: "location desc 1" as never,
-  health_status: "ASSIGNED" as never,
-  owner_team_id: 1 as never,
+  id: 0,
+  asset_code: "",
+  asset_type: "LINE",
+  feeder_line: "",
+  voltage_level: "10kV",
+  location_desc: "",
+  health_status: "NORMAL",
+  owner_team_id: null,
+  last_fault_at: null,
   ...overrides
 });
 
-export const createGridAssetForm = createDefaultGridAsset;
-export const createGridAssetResponse = createDefaultGridAsset;
+/** 登记表单构造（提交前由 service 补齐编号/归属） */
+export const createGridAssetForm = (): Partial<GridAsset> => ({
+  asset_code: "",
+  asset_type: "LINE",
+  feeder_line: "",
+  voltage_level: "10kV",
+  location_desc: "",
+  health_status: "NORMAL"
+});
+
+/** 列表行响应构造：台账页行视图 */
+export const createGridAssetResponse = (row: GridAsset) => ({ ...row });

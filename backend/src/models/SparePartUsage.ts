@@ -1,1 +1,3 @@
-export interface SparePartUsage { id: number; ticket_id: number; part_code: string; part_name: string; quantity: number; warehouse_name: string; approved_by: string; usage_status: string }
+import type { SparePartUsage, SparePart } from "../types";
+export const isPending = (usage: SparePartUsage): boolean => usage.usage_status === "PENDING";
+export const isLowStock = (part: SparePart): boolean => part.stock <= part.safety_stock;

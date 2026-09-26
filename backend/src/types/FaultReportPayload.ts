@@ -1,1 +1,1 @@
-export type FaultReportPayload = Record<string, unknown>;
+export type { FaultReportPayload, MergePayload } from "./index";
